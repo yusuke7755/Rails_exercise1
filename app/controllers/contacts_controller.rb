@@ -1,27 +1,77 @@
 class ContactsController < ApplicationController
+  before_action :set_contact, only: [:edit, :update, :destroy]
 
-  #1. お問い合わせ機能のコントローラ(contacts controller）を作成する
-  #2. アクションはnewとcreateのみとする
-  #3.newアクションでフォームを作成し、createで保存する、保存したらnewアクションにredirectする
+  #一覧画面
+  def index
+    @contacts = Contact.all
+  end
+
+  #新規作成
   def new
       # 追記する
       @contact = Contact.new
   end
 
+  # 編集
+  def edit
+   
+  end
+
+  #登録処理
   def create
+    binding.irb
     #変数に値を入れる
-    #4. routingはresourcesメソッドで作成する
-    @contact = Contact.new(params.require(:contact).permit(:name, :email, :content))
+    @contact = Contact.new(contact_params)
 
-    if @contact.save
-      #データが正しく入力されれば保存。
-      redirect_to new_contact_path
-
-    else
-      #データにエラーが生じている場合。画面をそのまま返す。
+    # 戻るで処理を変更
+    if params[:back]
       render :new
+    else
+      binding.irb
+      if @contact.save
+        #データが正しく入力されれば保存。
+        redirect_to contacts_path, 　notice: "ブログを作成しました！"
+      else
+        #データにエラーが生じている場合。画面をそのまま返す。
+        render :new
+      end
+      
     end
 
   end
 
+  #更新処理
+  def update
+    binding.irb
+    # 更新
+    if @contact.update(contact_params)
+      redirect_to contacts_path, notice: "ブログを編集しました！"
+    else
+      render :edit
+    end
+
+  end
+
+  #削除処理
+  def destroy
+    @contact.destroy
+    redirect_to contacts_path, notice:"ブログを削除しました！"
+  end
+
+  def confirm
+    @contact = Contact.new(contact_params)
+    render :new if @contact.invalid?
+
+  end
+
+  private
+  # Strong Parameters で　許可する項目の設定
+  def contact_params
+    params.require(:contact).permit(:name, :email, :content)
+  end
+
+  # idをキーとして値を取得するメソッドを追加
+  def set_contact
+    @contact = Contact.find(params[:id])
+  end
 end
